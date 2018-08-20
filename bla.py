@@ -31,8 +31,7 @@ for file in solidity_files:
 
     print("## Analyzing %s ##" % file)
 
-
-    contract = SolidityContract(path.join("contracts", file))
+    contract = SolidityContract(os.path.join("contracts", file))
     myth = Mythril()
 
     report = myth.fire_lasers(strategy='dfs', contracts=[contract], max_depth=24, execution_timeout=30)
