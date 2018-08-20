@@ -34,6 +34,10 @@ for file in solidity_files:
     contract = SolidityContract(os.path.join("contracts", file))
     myth = Mythril()
 
+    resume = open("./.resume", "w")
+    resume.write(file)
+    resume.close()
+
     report = myth.fire_lasers(strategy='dfs', contracts=[contract], max_depth=24, execution_timeout=30)
 
     if len(report.issues):
@@ -46,6 +50,4 @@ for file in solidity_files:
 
         print(report.as_text())
 
-    resume = open("./.resume", "w")
-    resume.write(file)
-    resume.close()
+
