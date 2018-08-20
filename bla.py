@@ -1,12 +1,10 @@
 from mythril.ether.soliditycontract import SolidityContract
-from mythril.analysis.symbolic import SymExecWrapper
-from mythril.analysis.security import fire_lasers
-from mythril.analysis.report import Report
+from mythril.mythril import Mythril
 import os
 
 
 solidity_files = []
-
+myth = Mythril()
 
 for filename in os.listdir('contracts'):
     if filename.endswith(".sol"):
@@ -44,11 +42,17 @@ for file in solidity_files:
     resume.write(file)
     resume.close()
 
-    sym = SymExecWrapper(contract, address, 'dfs', max_depth=22, execution_timeout=30, create_timeout=30)
-    issues = fire_lasers(sym, ['ether_send', 'suicide'])
+    report = myth.fire_lasers(
+        "dfs",
+        contracts=[contract],
+        modules=['ether_send', 'suicide'],
+        verbose_report=True,
+        max_depth=22,
+        execution_timeout=30,
+        create_timeout=30
+    )
 
-    if len(issues):
-        report = Report(issues)
+    if len(report.issues):
 
         f = open(os.path.join("results", "%s.json" % file), 'w')
         f.write("%s\n" % report.as_json())
