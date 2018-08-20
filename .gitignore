@@ -2,3 +2,4 @@ node_modules
 getContracts.js
 .DS_Store
 mythril
+results/*
