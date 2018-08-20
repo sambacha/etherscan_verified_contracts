@@ -1,7 +1,8 @@
-from mythril.mythril import Mythril
 from mythril.ether.soliditycontract import SolidityContract
+from mythril.analysis.symbolic import SymExecWrapper
+from mythril.analysis.security import fire_lasers
+from mythril.analysis.report import Report
 import os
-import html
 
 
 solidity_files = []
@@ -29,22 +30,26 @@ except:
 
 for file in solidity_files:
 
-    print("## Analyzing %s ##" % file)
+    address = file[:42]
+    name = file[43:]
+
+    print("## Analyzing %s at %s ##" % (name, address))
 
     try:
         contract = SolidityContract(os.path.join("contracts", file))
     except:
         print("Compilation error.")
 
-    myth = Mythril()
-
     resume = open("./.resume", "w")
     resume.write(file)
     resume.close()
 
-    report = myth.fire_lasers(strategy='dfs', contracts=[contract], modules=['ether_send', 'suicide'], max_depth=24, execution_timeout=30)
+    sym = SymExecWrapper(contract, address, 'dfs', max_depth=22, execution_timeout=30, create_timeout=30)
+    issues = fire_lasers(sym, ['ether_send', 'suicide'])
 
-    if len(report.issues):
+    if len(issues):
+        report = Report(issues)
+
         f = open(os.path.join("results", "%s.json" % file), 'w')
         f.write("%s\n" % report.as_json())
         f.close()
