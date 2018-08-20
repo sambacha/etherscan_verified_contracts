@@ -10,6 +10,8 @@ for filename in os.listdir('contracts'):
     if filename.endswith(".sol"):
         solidity_files.append(filename)
 
+solidity_files.sort()
+
 try:
     resume = open("./.resume", "r")
     resume_file = resume.read()
@@ -38,27 +40,30 @@ for file in solidity_files:
     except:
         print("Compilation error.")
 
-    resume = open("./.resume", "w")
+    resume = open(".resume", "w")
     resume.write(file)
     resume.close()
 
-    report = myth.fire_lasers(
-        "dfs",
-        contracts=[contract],
-        modules=['ether_send', 'suicide'],
-        verbose_report=True,
-        max_depth=22,
-        execution_timeout=30,
-        create_timeout=30
-    )
+    try:
+        report = myth.fire_lasers(
+            "dfs",
+            contracts=[contract],
+            modules=['ether_send', 'suicide'],
+            verbose_report=True,
+            max_depth=22,
+            execution_timeout=30,
+            create_timeout=30
+        )
 
-    if len(report.issues):
+        if len(report.issues):
 
-        f = open(os.path.join("results", "%s.json" % file), 'w')
-        f.write("%s\n" % report.as_json())
-        f.close()
-        f = open(os.path.join("results", "%s.txt" % file), 'w')
-        f.write("%s\n" % report.as_text())
-        f.close()
+            f = open(os.path.join("results", "%s.json" % file), 'w')
+            f.write("%s\n" % report.as_json())
+            f.close()
+            f = open(os.path.join("results", "%s.txt" % file), 'w')
+            f.write("%s\n" % report.as_text())
+            f.close()
 
-        print(report.as_text())
+            print(report.as_text())
+    except Exception as e:
+        print("Analysis error: %s" % str(e))
